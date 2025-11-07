@@ -1,0 +1,142 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+export default function Attendance({ loggedInUserId, loggedInUserName }) {
+    const [isCheckedIn, setIsCheckedIn] = useState(false);
+    const [timeElapsed, setTimeElapsed] = useState(0); // in seconds
+    const [isOfficeNetwork, setIsOfficeNetwork] = useState(false);
+
+    const intervalRef = useRef(null);
+
+    // Convert seconds to hh:mm:ss
+    const formatTime = (seconds) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h.toString().padStart(2, "0")}:${m
+            .toString()
+            .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    };
+
+    const handleCheckIn = () => {
+        if (isCheckedIn) return;
+
+        setIsCheckedIn(true);
+        setTimeElapsed(0);
+
+        // start timer
+        intervalRef.current = setInterval(() => {
+            setTimeElapsed((prev) => prev + 1);
+        }, 1000);
+
+        console.log("✅ Checked In at:", new Date().toLocaleTimeString());
+    };
+
+    const handleCheckOut = () => {
+        if (!isCheckedIn) return;
+
+        clearInterval(intervalRef.current);
+        setIsCheckedIn(false);
+
+        // Calculate hours and minutes
+        const hours = Math.floor(timeElapsed / 3600);
+        const minutes = Math.floor((timeElapsed % 3600) / 60);
+
+        console.log("🕓 Checked Out");
+        console.log(
+            `Total Time Worked: ${hours} hour(s) and ${minutes} minute(s)`
+        );
+
+        // TODO: Send data to backend
+        const attendanceData = {
+            userId: loggedInUserId,
+            name: loggedInUserName,
+            date: new Date().toISOString().split("T")[0],
+            duration: `${hours}h ${minutes}m`,
+            checkInTime: new Date().toLocaleTimeString(),
+            checkOutTime: new Date().toLocaleTimeString(),
+        };
+
+        console.log("📤 Data to send:", attendanceData);
+
+        // Later we'll replace this console.log with API POST
+        fetch("http://localhost:5000/api/attendance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(attendanceData),
+        });
+    };
+
+    // Clear interval on unmount
+    useEffect(() => {
+        return () => clearInterval(intervalRef.current);
+    }, []);
+
+    // check IP address to allow check-in/out only from office
+    useEffect(() => {
+        const fetchIP = async () => {
+            try {
+                const res = await fetch("https://api.ipify.org?format=json");
+                const data = await res.json();
+                const userIP = data.ip;
+
+                const officeIP = "49.205.41.34"; // replace with your real office IP
+
+                if (userIP === officeIP) {
+                    setIsOfficeNetwork(true);
+                } else {
+                    setIsOfficeNetwork(false);
+                    alert("⚠️ You are not connected to the office network.");
+                }
+            } catch (err) {
+                console.error("Error fetching IP:", err);
+            }
+        };
+
+        fetchIP();
+    }, []);
+
+    return (
+        <>
+            <div className=''>
+        <Card className="bg-white shadow-md">
+            <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <span>📅</span> Attendance
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 items-center">
+                <div className="text-2xl font-mono text-blue-600">
+                    {formatTime(timeElapsed)}
+                </div>
+                <div className={`flex gap-4 ${isOfficeNetwork ? "block" : "hidden"}`}>
+                    <Button
+                        onClick={handleCheckIn}
+                        disabled={isCheckedIn}
+                        className={`${isCheckedIn
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-green-500 hover:bg-green-600"
+                            } text-white`}
+                    >
+                        Check In
+                    </Button>
+                    <Button
+                        onClick={handleCheckOut}
+                        disabled={!isCheckedIn}
+                        className={`${!isCheckedIn
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-red-500 hover:bg-red-600"
+                            } text-white`}
+                    >
+                        Check Out
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+            </div>
+        </>
+    );
+}

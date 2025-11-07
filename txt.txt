@@ -1,0 +1,387 @@
+<section>
+                        <Card className="bg-white shadow-lg">
+                            <CardHeader>
+                                <CardTitle>Chat with {activeEmployee?.name || "User"}</CardTitle>
+                            </CardHeader>
+
+                            {/* Messages Area */}
+                            <CardContent className="flex flex-col space-y-2 h-[300px] overflow-auto">
+                                {messages.length > 0 ? (
+                                    messages.map((msg, index) => (
+                                        <div key={index} className="text-gray-800">
+                                            <strong>{msg.sender}:</strong> {msg.text}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-gray-500">Chat messages will appear here...</div>
+                                )}
+                            </CardContent>
+
+                            {/* Input & Send Button */}
+                            <CardContent className="flex space-x-2 mt-2">
+                                <Input
+                                    placeholder="Type a message..."
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                                />
+                                <Button onClick={handleSend}>Send</Button>
+                            </CardContent>
+                        </Card>
+                    </section>
+
+
+                    ////////
+                    dashboard
+
+
+                    "use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { AppSidebar } from "@/components/AppSidebar";
+import ChatBox from "@/components/ChatBox";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Leave from "@/components/Leave";
+
+export default function Dashboard() {
+    const router = useRouter();
+
+    const [loggedInUserId, setLoggedInUserId] = useState(null);
+    const [loggedInUserRole, setLoggedInUserRole] = useState(null);
+    const [loggedInUserName, setLoggedInUserName] = useState("");
+    const [activeEmployee, setActiveEmployee] = useState(null);
+
+    const [notices, setNotices] = useState([
+        { id: 1, message: "Team meeting at 3 PM" },
+        { id: 2, message: "Submit your reports" },
+    ]);
+
+    // Client-side effect: fetch user info from localStorage
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userId = localStorage.getItem("userId");
+            const role = localStorage.getItem("role");
+            const name = localStorage.getItem("userName");
+
+            if (!userId) {
+                router.push("/login"); // redirect if not logged in
+                return;
+            }
+
+            setLoggedInUserId(userId);
+            setLoggedInUserRole(role);
+            setLoggedInUserName(name);
+        }
+    }, [router]);
+
+    const handleLogout = () => {
+        localStorage.clear();
+        router.push("/login");
+    };
+
+    // Show loader if user data not ready
+    if (!loggedInUserId || !loggedInUserRole || !loggedInUserName) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-gray-500">Loading dashboard...</p>
+            </div>
+        );
+    }
+
+    return (
+        <>
+        <div>
+        <SidebarProvider>
+            <div className="flex min-h-screen bg-gray-100">
+                {/* Sidebar / Chat List */}
+                <AppSidebar
+                    onSelectEmployee={(emp) => setActiveEmployee(emp)}
+                    loggedInUserId={loggedInUserId}
+                    role={loggedInUserRole} // pass role for chat filtering
+                />
+
+                {/* Main Content */}
+                <main className="flex-1 p-6 space-y-6">
+
+                    {/* Logout Button */}
+                    <div className="flex justify-end mb-4">
+                        <Button
+                            className="bg-red-500 text-white hover:bg-red-600"
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </Button>
+                    </div>
+
+                    {/* Notice Board */}
+                    <section>
+                        <h2 className="text-2xl font-bold mb-4">Notice Board</h2>
+                        <div className="grid gap-4">
+                            {notices.map((notice) => (
+                                <Card key={notice.id} className="bg-yellow-50 border-l-4 border-yellow-400">
+                                    <CardHeader>
+                                        <CardTitle className="text-sm font-medium">Notice</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p>{notice.message}</p>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Welcome Info */}
+                    <section>
+                        <Card className="bg-white shadow-lg">
+                            <CardHeader>
+                                <CardTitle>Welcome {loggedInUserName}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p>Your role: {loggedInUserRole}</p>
+                                <p>Here you can see notices, chats, leaves, and other company updates.</p>
+                            </CardContent>
+                        </Card>
+                    </section>
+
+                    {/* Chat Area */}
+                    <div className="p-4 rounded-lg shadow-md">
+                        <ChatBox
+                            activeEmployee={activeEmployee}
+                            loggedInUserId={loggedInUserId}
+                        />
+                    </div>
+
+                    {/* Leave Management */}
+                    <div className="p-4 rounded-lg shadow-md">
+                        <Leave
+                            loggedInUserId={loggedInUserId}
+                            loggedInUserName={loggedInUserName}
+                            role={loggedInUserRole}
+                        />
+                    </div>
+                </main>
+            </div>
+        </SidebarProvider>
+            </div>
+        </>
+    );
+}
+//////////////
+//////
+//////
+"use client";
+
+import { User } from "lucide-react";
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { useEffect, useState } from "react";
+
+export function AppSidebar({ onSelectEmployee, loggedInUserId }) {
+    const [employees, setEmployees] = useState([]);
+    const [loggedInUserRole, setLoggedInUserRole] = useState(null);
+
+    useEffect(() => {
+        // Get role from localStorage on client-side
+        const role = localStorage.getItem("role");
+        setLoggedInUserRole(role);
+    }, []);
+
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/api/auth/employees");
+                const data = await response.json();
+                setEmployees(data);
+            } catch (error) {
+                console.error("Error fetching employees:", error);
+            }
+        };
+
+        fetchEmployees();
+    }, []);
+
+    // Filter employees based on role
+    const filteredEmployees = employees
+        .filter(emp => emp._id !== loggedInUserId) // remove logged-in user
+        .filter(emp => {
+            if (loggedInUserRole === "admin") return true; // admin sees all
+            return emp.role === "admin"; // normal user sees only admins
+        });
+
+    return (
+        <Sidebar>
+            <SidebarContent>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Employees</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            {filteredEmployees.map(emp => (
+                                <SidebarMenuItem key={emp._id}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        onClick={() => onSelectEmployee(emp)}
+                                    >
+                                        <button className="flex items-center space-x-2 w-full text-left p-2 hover:bg-gray-200 rounded">
+                                            <User className="w-4 h-4" />
+                                            <span>{emp.name}</span>
+                                        </button>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+            </SidebarContent>
+        </Sidebar>
+    );
+}
+////////
+/////
+<div className="flex bg-yellow-200">
+                                    {/* Leave Management */}
+                                    {/* Leave */}
+                                    <Card className="bg-pink-100 pb-0 shadow-md ">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center ">
+                                                <span>🗓️</span> Leave
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <div className="overflow-y-auto max-h-[500px] bg-sky-200">
+                                            <CardContent>
+                                                <Leave
+                                                    loggedInUserId={loggedInUserId}
+                                                    loggedInUserName={loggedInUserName}
+                                                    role={loggedInUserRole}
+                                                />
+                                            </CardContent>
+                                        </div>
+
+                                    </Card>
+                                </div>
+
+                                /////
+                                ///// chatbox.js
+                                "use client";
+
+import React, { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+// Props: activeEmployee (selected from AppSidebar), loggedInUserId
+export default function ChatBox({ activeEmployee, loggedInUserId }) {
+    const [message, setMessage] = useState("");
+    const [messages, setMessages] = useState([]);
+
+
+    useEffect(() => {
+        if (!activeEmployee) return;
+
+        // Reset messages when switching employee
+        setMessages([]);
+
+        // Optional: fetch messages from backend for this employee
+        const fetchMessages = async () => {
+            try {
+                const res = await fetch(
+                    `http://localhost:5000/api/messages?senderId=${loggedInUserId}&receiverId=${activeEmployee._id}`
+                );
+                const data = await res.json();
+                setMessages(data || []);
+            } catch (err) {
+                console.error("Failed to load messages:", err);
+            }
+        };
+
+        fetchMessages();
+    }, [activeEmployee, loggedInUserId]);
+
+
+    const handleSend = async () => {
+        if (!message.trim() || !activeEmployee) return;
+
+        const newMessage = {
+            senderId: loggedInUserId,
+            receiverId: activeEmployee._id,
+            text: message,
+            timestamp: new Date().toISOString(),
+        };
+
+        console.log("Sending message:", newMessage.receiverId, newMessage.senderId, newMessage.text);
+        // Update local UI immediately
+        setMessages((prev) => [...prev, { ...newMessage, sender: "You" }]);
+        setMessage("");
+
+        try {
+            const res = await fetch("http://localhost:5000/api/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newMessage),
+            });
+
+            const savedMessage = await res.json();
+            console.log("Message saved to backend:", savedMessage);
+        } catch (err) {
+            console.error("Error sending message:", err);
+        }
+    };
+
+    return (
+        <section>
+            {activeEmployee ? (
+                <Card className="bg-gradient-to-r from-indigo-300 to-orange-300">
+                    <CardHeader>
+                        <CardTitle>Chat with {activeEmployee.name}</CardTitle>
+                    </CardHeader>
+
+                    {/* Messages Area */}
+                    <CardContent className="flex flex-col space-y-2 h-[300px] overflow-auto">
+                        {messages.length > 0 ? (
+                            messages.map((msg, index) => {
+                                const isSender = msg.senderId === loggedInUserId; // logged-in user ke liye check
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`max-w-[60%] p-2 rounded-3xl break-words ${isSender
+                                                ? "self-end bg-orange-400 text-white"  // Right side
+                                                : "self-start bg-gray-200 text-gray-800" // Left side
+                                            }`}
+                                    >
+                                        {msg.text}
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="text-gray-500">Chat messages will appear here...</div>
+                        )}
+                    </CardContent>
+
+
+                    {/* Input & Send Button */}
+                    <CardContent className="flex space-x-2 mt-2">
+                        <Input
+                            placeholder="Type a message..."
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                        />
+                        <Button onClick={handleSend}>Send</Button>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="text-gray-500">Select an employee to start chatting</div>
+            )}
+        </section>
+    );
+}
