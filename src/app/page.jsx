@@ -3,7 +3,6 @@ import Image from "next/image";
 export default function Home() {
   return (
     <>
-    <h1>Hello World</h1>
       <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
         <h1 className="text-3xl font-bold mb-4">Welcome to TeamChat 💬</h1>
         <div className="flex gap-4">
