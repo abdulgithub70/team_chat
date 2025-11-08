@@ -11,7 +11,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
 
     const intervalRef = useRef(null);
 
-    // Convert seconds to hh:mm:ss
+    // Convert seconds → hh:mm:ss
     const formatTime = (seconds) => {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
@@ -24,12 +24,19 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
     const handleCheckIn = () => {
         if (isCheckedIn) return;
 
-        setIsCheckedIn(true);
-        setTimeElapsed(0);
+        const startTime = Date.now(); // current time in milliseconds
+        localStorage.setItem("checkInTime", startTime); // ✅ store in localStorage
 
-        // start timer
+        setIsCheckedIn(true);
+
+        // Start timer based on actual time difference
         intervalRef.current = setInterval(() => {
-            setTimeElapsed((prev) => prev + 1);
+            const savedStart = localStorage.getItem("checkInTime");
+            if (savedStart) {
+                const now = Date.now();
+                const diff = Math.floor((now - savedStart) / 1000); // seconds
+                setTimeElapsed(diff);
+            }
         }, 1000);
 
         console.log("✅ Checked In at:", new Date().toLocaleTimeString());
@@ -39,30 +46,27 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
         if (!isCheckedIn) return;
 
         clearInterval(intervalRef.current);
+        localStorage.removeItem("checkInTime"); // ✅ remove after checkout
         setIsCheckedIn(false);
 
-        // Calculate hours and minutes
+        // Calculate time worked
         const hours = Math.floor(timeElapsed / 3600);
         const minutes = Math.floor((timeElapsed % 3600) / 60);
 
         console.log("🕓 Checked Out");
-        console.log(
-            `Total Time Worked: ${hours} hour(s) and ${minutes} minute(s)`
-        );
+        console.log(`Total Time Worked: ${hours} hour(s) and ${minutes} minute(s)`);
 
-        // TODO: Send data to backend
         const attendanceData = {
             userId: loggedInUserId,
             name: loggedInUserName,
             date: new Date().toISOString().split("T")[0],
             duration: `${hours}h ${minutes}m`,
-            checkInTime: new Date().toLocaleTimeString(),
+            checkInTime: new Date(parseInt(localStorage.getItem("checkInTime"))).toLocaleTimeString(),
             checkOutTime: new Date().toLocaleTimeString(),
         };
 
         console.log("📤 Data to send:", attendanceData);
 
-        // Later we'll replace this console.log with API POST
         fetch("http://localhost:5000/api/attendance", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -70,8 +74,17 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
         });
     };
 
-    // Clear interval on unmount
+    // 🔁 Restore timer if page refreshes
     useEffect(() => {
+        const savedStart = localStorage.getItem("checkInTime");
+        if (savedStart) {
+            setIsCheckedIn(true);
+            intervalRef.current = setInterval(() => {
+                const now = Date.now();
+                const diff = Math.floor((now - savedStart) / 1000);
+                setTimeElapsed(diff);
+            }, 1000);
+        }
         return () => clearInterval(intervalRef.current);
     }, []);
 
@@ -83,9 +96,9 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
                 const data = await res.json();
                 const userIP = data.ip;
 
-                const officeIP = "49.205.41.34"; // replace with your real office IP
+                const officeIPs = ["49.205.41.34", "49.205.40.185"]; // replace with your real office IPs
 
-                if (userIP === officeIP) {
+                if (officeIPs.includes(userIP)) {
                     setIsOfficeNetwork(true);
                 } else {
                     setIsOfficeNetwork(false);
