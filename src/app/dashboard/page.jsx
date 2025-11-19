@@ -17,6 +17,7 @@ export default function Dashboard() {
     const [loggedInUserRole, setLoggedInUserRole] = useState(null);
     const [loggedInUserName, setLoggedInUserName] = useState("");
     const [activeEmployee, setActiveEmployee] = useState(null);
+    
 
     const [notices, setNotices] = useState([
         { id: 1, message: "Meeting at 10 AM tomorrow" },
@@ -97,7 +98,7 @@ export default function Dashboard() {
                                         </CardHeader>
                                         <CardContent className="space-y-2">
                                             {notices.map((notice) => (
-                                                <p key={notice.id} className="text-gray-700">
+                                                <p key={notice.id} className="text-gray-700 border-b pb-2 text-md font-bold">
                                                     {notice.message}
                                                 </p>
                                             ))}
@@ -106,10 +107,10 @@ export default function Dashboard() {
                                 </div>
 
                                 {/* CENTER COLUMN */}
-                                <div className="space-y-">
+                                <div className="">
                                     {/* Team Chat */}
-                                    <Card className="bg-white shadow-md">
-                                        <CardHeader>
+                                    <Card className="bg-transparent shadow-md">
+                                        <CardHeader >
                                             <CardTitle className="flex items-center gap-2">
                                                 <span>💬</span> Team Chat
                                             </CardTitle>

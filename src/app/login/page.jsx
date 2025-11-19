@@ -18,6 +18,8 @@ export default function LoginPage() {
         password: "",
     });
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -41,7 +43,7 @@ export default function LoginPage() {
             // ------------------------
             // Backend API call
             // ------------------------
-            const res = await fetch("http://localhost:5000/api/auth/login", {
+            const res = await fetch(`${apiUrl}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(loginData),

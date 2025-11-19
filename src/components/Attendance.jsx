@@ -8,7 +8,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [timeElapsed, setTimeElapsed] = useState(0); // in seconds
     const [isOfficeNetwork, setIsOfficeNetwork] = useState(false);
-
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const intervalRef = useRef(null);
 
     // Convert seconds → hh:mm:ss
@@ -45,29 +45,32 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
     const handleCheckOut = () => {
         if (!isCheckedIn) return;
 
+        // Get check-in time BEFORE removing it 
+        const startTime = localStorage.getItem("checkInTime");
         clearInterval(intervalRef.current);
-        localStorage.removeItem("checkInTime"); // ✅ remove after checkout
         setIsCheckedIn(false);
+        localStorage.removeItem("checkInTime");
 
-        // Calculate time worked
+        // ⬇️ Reset timer to 0 
+        setTimeElapsed(0);
+
         const hours = Math.floor(timeElapsed / 3600);
         const minutes = Math.floor((timeElapsed % 3600) / 60);
 
-        console.log("🕓 Checked Out");
-        console.log(`Total Time Worked: ${hours} hour(s) and ${minutes} minute(s)`);
+        //console.log("🕓 Checked Out");
+        //console.log(`Total Time Worked: ${hours} hour(s) and ${minutes} minute(s)`);
 
-        const attendanceData = {
-            userId: loggedInUserId,
-            name: loggedInUserName,
-            date: new Date().toISOString().split("T")[0],
-            duration: `${hours}h ${minutes}m`,
-            checkInTime: new Date(parseInt(localStorage.getItem("checkInTime"))).toLocaleTimeString(),
-            checkOutTime: new Date().toLocaleTimeString(),
+        const attendanceData = { 
+            userId: loggedInUserId, 
+            name: loggedInUserName, 
+            date: new Date().toISOString().split("T")[0], 
+            duration: `${hours}h ${minutes}m`, 
+            checkInTime: new Date(parseInt(startTime)).toLocaleTimeString(), 
+            checkOutTime: new Date().toLocaleTimeString(), 
         };
 
         console.log("📤 Data to send:", attendanceData);
-
-        fetch("http://localhost:5000/api/attendance", {
+        fetch(`${apiUrl}/attendance`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(attendanceData),
@@ -81,7 +84,8 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
             setIsCheckedIn(true);
             intervalRef.current = setInterval(() => {
                 const now = Date.now();
-                const diff = Math.floor((now - savedStart) / 1000);
+                //const diff = Math.floor((now - savedStart) / 1000);
+                const diff = Math.floor((now - parseInt(savedStart)) / 1000);
                 setTimeElapsed(diff);
             }, 1000);
         }
@@ -92,7 +96,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
     useEffect(() => {
         const fetchIP = async () => {
             try {
-                const res = await fetch("https://api.ipify.org?format=json");
+                const res = await fetch(`${apiUrl}/ip`);
                 const data = await res.json();
                 const userIP = data.ip;
 
@@ -101,7 +105,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
                 if (officeIPs.includes(userIP)) {
                     setIsOfficeNetwork(true);
                 } else {
-                    setIsOfficeNetwork(false);
+                    setIsOfficeNetwork(true);//false
                     alert("⚠️ You are not connected to the office network.");
                 }
             } catch (err) {
@@ -115,40 +119,40 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
     return (
         <>
             <div className=''>
-        <Card className="bg-white shadow-md">
-            <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <span>📅</span> Attendance
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 items-center">
-                <div className="text-2xl font-mono text-blue-600">
-                    {formatTime(timeElapsed)}
-                </div>
-                <div className={`flex gap-4 ${isOfficeNetwork ? "block" : "hidden"}`}>
-                    <Button
-                        onClick={handleCheckIn}
-                        disabled={isCheckedIn}
-                        className={`${isCheckedIn
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-green-500 hover:bg-green-600"
-                            } text-white`}
-                    >
-                        Check In
-                    </Button>
-                    <Button
-                        onClick={handleCheckOut}
-                        disabled={!isCheckedIn}
-                        className={`${!isCheckedIn
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-red-500 hover:bg-red-600"
-                            } text-white`}
-                    >
-                        Check Out
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+                <Card className="bg-white shadow-md">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                            <span>📅</span> Attendance
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-3 items-center">
+                        <div className="text-2xl font-mono text-blue-600">
+                            {formatTime(timeElapsed)}
+                        </div>
+                        <div className={`flex gap-4 ${isOfficeNetwork ? "block" : "hidden"}`}>
+                            <Button
+                                onClick={handleCheckIn}
+                                disabled={isCheckedIn}
+                                className={`${isCheckedIn
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-green-500 hover:bg-green-600"
+                                    } text-white`}
+                            >
+                                Check In
+                            </Button>
+                            <Button
+                                onClick={handleCheckOut}
+                                disabled={!isCheckedIn}
+                                className={`${!isCheckedIn
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-red-500 hover:bg-red-600"
+                                    } text-white`}
+                            >
+                                Check Out
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </>
     );

@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 export function AppSidebar({ onSelectEmployee, loggedInUserId }) {
     const [employees, setEmployees] = useState([]);
     const [loggedInUserRole, setLoggedInUserRole] = useState(null);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         // Get role from localStorage on client-side
@@ -26,7 +27,7 @@ export function AppSidebar({ onSelectEmployee, loggedInUserId }) {
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/auth/employees");
+                const response = await fetch(`${apiUrl}/auth/employees`);
                 const data = await response.json();
                 setEmployees(data);
             } catch (error) {

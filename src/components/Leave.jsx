@@ -10,6 +10,7 @@ export default function Leave({ loggedInUserId, loggedInUserName, role }) {
     const [endDate, setEndDate] = useState("");
     const [reason, setReason] = useState("");
     const [leaves, setLeaves] = useState([]);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     // Fetch leaves
     useEffect(() => {
@@ -18,7 +19,7 @@ export default function Leave({ loggedInUserId, loggedInUserName, role }) {
         const fetchLeaves = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:5000/api/leave?userId=${loggedInUserId}&role=${role}`
+                    `${apiUrl}/leave?userId=${loggedInUserId}&role=${role}`
                 );
                 const data = await res.json();
                 setLeaves(data);
@@ -38,7 +39,7 @@ export default function Leave({ loggedInUserId, loggedInUserName, role }) {
         }
 
         try {
-            const res = await fetch("http://localhost:5000/api/leave/apply", {
+            const res = await fetch(`${apiUrl}/leave/apply`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -66,7 +67,7 @@ export default function Leave({ loggedInUserId, loggedInUserName, role }) {
     // Admin approve/deny
     const handleStatus = async (id, status) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/leave/${id}`, {
+            const res = await fetch(`${apiUrl}/leave/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status }),

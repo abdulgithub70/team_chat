@@ -17,6 +17,8 @@ export default function RegisterPage() {
         password: "",
     });
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -43,7 +45,7 @@ export default function RegisterPage() {
 
         try {
             // Send data to backend API
-            const res = await fetch("http://localhost:5000/api/auth/register", {
+            const res = await fetch(`${apiUrl}/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(userData),

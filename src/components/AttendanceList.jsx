@@ -25,6 +25,7 @@ export default function AttendanceList({ loggedInUserId, loggedInUserName, role 
     const [filteredRecords, setFilteredRecords] = useState([]);
     const [searchName, setSearchName] = useState("");
     const [searchDate, setSearchDate] = useState("");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
    
 
 
@@ -35,10 +36,11 @@ export default function AttendanceList({ loggedInUserId, loggedInUserName, role 
     useEffect(() => {
         const fetchAttendance = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/attendance");
+                const res = await fetch(`${apiUrl}/attendance`);
                 const data = await res.json();
                 setRecords(data);
                 setFilteredRecords(data);
+                console.log("✅ Fetched attendance records:", data);    
             } catch (err) {
                 console.error("❌ Error fetching attendance:", err);
             }
