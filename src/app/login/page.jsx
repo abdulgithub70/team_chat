@@ -38,6 +38,7 @@ export default function LoginPage() {
         // Store form data as object
         const loginData = { username, password };
         console.log("Login Data:", loginData);
+        console.log("API URL:", apiUrl);
 
         try {
             // ------------------------

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Paperclip, FileText, X } from "lucide-react";
 
-const socket = io("http://localhost:5000");
+//const socket = io("http://localhost:5000");
+const socket = io(process.env.NEXT_PUBLIC_API_URL.replace("/api", ""));
 
 export default function ChatBox({ activeEmployee, loggedInUserId }) {
     const [message, setMessage] = useState("");
