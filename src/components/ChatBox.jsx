@@ -5,7 +5,6 @@ import io from "socket.io-client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Paperclip, FileText, X } from "lucide-react";
 
 //const socket = io("http://localhost:5000");

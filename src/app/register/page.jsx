@@ -119,7 +119,7 @@ export default function RegisterPage() {
                         <div>
                             <Label>Mobile No.</Label>
                             <Input
-                                type="tel"
+                                type="number"
                                 name="mobile"
                                 required
                                 value={formData.mobile}
@@ -133,6 +133,7 @@ export default function RegisterPage() {
                                 type="password"
                                 name="password"
                                 required
+                                minLength="8" 
                                 value={formData.password}
                                 onChange={handleChange}
                                 placeholder="Create a password"
