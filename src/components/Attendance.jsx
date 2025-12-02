@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
 
 export default function Attendance({ loggedInUserId, loggedInUserName }) {
     const [isCheckedIn, setIsCheckedIn] = useState(false);
@@ -39,7 +40,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
             }
         }, 1000);
 
-        console.log("✅ Checked In at:", new Date().toLocaleTimeString());
+        //console.log("✅ Checked In at:", new Date().toLocaleTimeString());
     };
 
     const handleCheckOut = () => {
@@ -60,13 +61,13 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
         //console.log("🕓 Checked Out");
         //console.log(`Total Time Worked: ${hours} hour(s) and ${minutes} minute(s)`);
 
-        const attendanceData = { 
-            userId: loggedInUserId, 
-            name: loggedInUserName, 
-            date: new Date().toISOString().split("T")[0], 
-            duration: `${hours}h ${minutes}m`, 
-            checkInTime: new Date(parseInt(startTime)).toLocaleTimeString(), 
-            checkOutTime: new Date().toLocaleTimeString(), 
+        const attendanceData = {
+            userId: loggedInUserId,
+            name: loggedInUserName,
+            date: new Date().toISOString().split("T")[0],
+            duration: `${hours}h ${minutes}m`,
+            checkInTime: new Date(parseInt(startTime)).toLocaleTimeString(),
+            checkOutTime: new Date().toLocaleTimeString(),
         };
 
         console.log("📤 Data to send:", attendanceData);
@@ -106,7 +107,8 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
                     setIsOfficeNetwork(true);
                 } else {
                     setIsOfficeNetwork(true);//false
-                    alert("⚠️ You are not connected to the office network.");
+                    //alert("⚠️ You are not connected to the office network.");
+                    toast.error("You are not connected to the office network.");
                 }
             } catch (err) {
                 console.error("Error fetching IP:", err);

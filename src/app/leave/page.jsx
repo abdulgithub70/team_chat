@@ -43,7 +43,7 @@ export default function LeavePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6 space-y-6">
+        <div className="h-screen bg-gray-500 p-6 space-y-6">
             {/* Header */}
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-800">Leave Management</h1>
@@ -80,7 +80,7 @@ export default function LeavePage() {
                 </h2>
 
                 {/* Scrollable container */}
-                <div className="max-h-[50px] overflow-y-auto">
+                <div className="max-h-[500px] overflow-y-auto">
                     {/* ✅ Reuse same Leave component for listing */}
                     <Leave
                         loggedInUserId={loggedInUserId}
