@@ -71,16 +71,7 @@ export default function AttendanceList({ loggedInUserId, loggedInUserName, role 
         return toHourMinute(totalMinutes);
     };
 
-    // 🚫 If not admin, don't show table
-    /*
-    if (!loggedInUser || loggedInUser.role !== "user") {
-        return (
-            <Card className="bg-white shadow-md mt-6 p-6 text-center text-gray-600">
-                You don’t have permission to view attendance records.
-            </Card>
-        );
-    }
-*/
+    
 
 console.log("User role in AttendanceList:", role);
     return (

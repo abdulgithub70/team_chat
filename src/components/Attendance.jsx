@@ -94,6 +94,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
     }, []);
 
     // check IP address to allow check-in/out only from office
+    /*
     useEffect(() => {
         const fetchIP = async () => {
             try {
@@ -115,9 +116,9 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
             }
         };
 
-        fetchIP();
+        //fetchIP();
     }, []);
-
+*/
     return (
         <>
             <div className=''>

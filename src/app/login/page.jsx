@@ -31,49 +31,52 @@ export default function LoginPage() {
 
         const { username, password } = formData;
 
-        // Validation
+        // 🔍 Basic validation
         if (!username || !password) {
             toast.error("Please fill all fields!");
             return;
         }
 
-        // Store form data as object
-        const loginData = { username, password };
-        
         try {
             setLoading(true);
-            fetch(`${apiUrl}/health`, {});
-            // Backend API call
-            // ------------------------
+
+            // 🔥 Wake up Render backend (non-blocking)
+            fetch(`${apiUrl}/health`).catch(() => { });
+
+            // 🔐 Login API call
             const res = await fetch(`${apiUrl}/auth/login`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(loginData),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password }),
             });
 
             const data = await res.json();
 
-            if (!res.ok) {
+            if (!res.ok || data.success === false) {
+
+                alert(data.message || "Login failed");
+
                 setLoading(false);
-                toast.error(data.message || "Login failed!");
-                //alert(data.message || "Login failed!");
                 return;
             }
 
-            // Save user ID and role in localStorage
+
+            // ✅ Save auth data
             localStorage.setItem("userId", data.user._id);
-            localStorage.setItem("userName", data.user.name);  // <- add this
+            localStorage.setItem("userName", data.user.name);
             localStorage.setItem("role", data.user.role);
 
-            //console.log("Logged in user ID:", data.user._id);
             toast.success("Login successful!");
 
-            // Redirect to dashboard
+            // 🚀 Instant redirect
             router.replace("/dashboard");
-        } catch (err) {
+
+        } catch (error) {
+            console.error("Login error:", error);
+            toast.error("Server is waking up, please wait...");
             setLoading(false);
-            console.error("Login error:", err);
-            toast.error("Network error while logging in!");
         }
     };
 
