@@ -12,6 +12,8 @@ import Link from "next/link";
 // Temporary dummy users (for frontend testing)
 export default function LoginPage() {
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
+
 
     const [formData, setFormData] = useState({
         username: "",
@@ -37,11 +39,10 @@ export default function LoginPage() {
 
         // Store form data as object
         const loginData = { username, password };
-        console.log("Login Data:", loginData);
-        console.log("API URL:", apiUrl);
-
+        
         try {
-            // ------------------------
+            setLoading(true);
+            fetch(`${apiUrl}/health`, {});
             // Backend API call
             // ------------------------
             const res = await fetch(`${apiUrl}/auth/login`, {
@@ -53,8 +54,9 @@ export default function LoginPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                //toast.error(data.message || "Login failed!");
-                alert(data.message || "Login failed!");
+                setLoading(false);
+                toast.error(data.message || "Login failed!");
+                //alert(data.message || "Login failed!");
                 return;
             }
 
@@ -67,8 +69,9 @@ export default function LoginPage() {
             toast.success("Login successful!");
 
             // Redirect to dashboard
-            router.push("/dashboard");
+            router.replace("/dashboard");
         } catch (err) {
+            setLoading(false);
             console.error("Login error:", err);
             toast.error("Network error while logging in!");
         }
@@ -106,8 +109,8 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        <Button type="submit" className="w-full mt-2">
-                            Login
+                        <Button type="submit" className="w-full mt-2" disabled={loading}>
+                            {loading ? "Logging in..." : "Login"}
                         </Button>
                     </form>
                 </CardContent>

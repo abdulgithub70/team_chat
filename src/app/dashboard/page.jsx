@@ -1,5 +1,5 @@
 "use client";
-
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -7,6 +7,24 @@ import { Button } from "@/components/ui/button";
 import Leave from "@/components/Leave";
 import Attendance from "@/components/Attendance";
 import AttendanceList from "@/components/AttendanceList";
+
+
+
+// 👇👇👇 YAHAN PASTE KARO
+function DashboardSkeleton() {
+    return (
+        <div className="min-h-screen p-6 space-y-6">
+            <Skeleton className="h-8 w-64" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <Skeleton className="h-64" />
+                <Skeleton className="h-64" />
+                <Skeleton className="h-64" />
+                <Skeleton className="h-64" />
+            </div>
+        </div>
+    );
+}
 
 export default function Dashboard() {
     const router = useRouter();
@@ -40,13 +58,10 @@ export default function Dashboard() {
         router.push("/login");
     };
 
-    if (!loggedInUserId || !loggedInUserRole || !loggedInUserName) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p>Loading dashboard...</p>
-            </div>
-        );
+    if (!loggedInUserId) {
+        return <DashboardSkeleton />;
     }
+
 
     return (
         <div className="min-h-screen p-6 bg-gray-100">
