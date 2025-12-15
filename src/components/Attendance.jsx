@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 export default function Attendance({ loggedInUserId, loggedInUserName }) {
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [timeElapsed, setTimeElapsed] = useState(0); // in seconds
-    const [isOfficeNetwork, setIsOfficeNetwork] = useState(false);
+    //const [isOfficeNetwork, setIsOfficeNetwork] = useState(false);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const intervalRef = useRef(null);
 
@@ -132,7 +132,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
                         <div className="text-2xl font-mono text-blue-600">
                             {formatTime(timeElapsed)}
                         </div>
-                        <div className={`flex gap-4 ${isOfficeNetwork ? "block" : "hidden"}`}>
+                        <div className={`flex gap-4 `}>
                             <Button
                                 onClick={handleCheckIn}
                                 disabled={isCheckedIn}
