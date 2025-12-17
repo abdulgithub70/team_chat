@@ -84,10 +84,10 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600">
+        <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600 p-1">
             <Card className="w-[400px] shadow-2xl border-0 bg-white/95 backdrop-blur-lg">
                 <CardHeader>
-                    <CardTitle className="text-center text-2xl font-semibold">
+                    <CardTitle className="text-center text-2xl text-black font-semibold">
                         Login to your account
                     </CardTitle>
                 </CardHeader>

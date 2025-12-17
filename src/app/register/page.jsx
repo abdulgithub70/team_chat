@@ -82,10 +82,10 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-indigo-500 to-purple-600">
+        <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-indigo-400 to-purple-500 p-1">
             <Card className="w-[400px] shadow-2xl border-0 bg-white/90 backdrop-blur-lg">
                 <CardHeader>
-                    <CardTitle className="text-center text-2xl font-semibold">
+                    <CardTitle className="text-center text-2xl text-black font-semibold">
                         Create Account
                     </CardTitle>
                 </CardHeader>
