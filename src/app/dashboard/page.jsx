@@ -34,12 +34,6 @@ export default function Dashboard() {
     const [loggedInUserRole, setLoggedInUserRole] = useState(null);
     const [loggedInUserName, setLoggedInUserName] = useState("");
 
-    const [notices] = useState([
-        { id: 1, message: "Meeting at 10 AM tomorrow" },
-        { id: 2, message: "Employee of the Month: Ayaan" },
-        { id: 3, message: "Next holiday: Diwali (Nov 1)" },
-    ]);
-
     useEffect(() => {
         if (typeof window !== "undefined") {
             const uid = localStorage.getItem("userId");
@@ -92,18 +86,15 @@ export default function Dashboard() {
 
                 {/* COLUMN 1 — Notice + Chat Button */}
                 <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>📢 Notice Board</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            {notices.map((n) => (
-                                <p key={n.id} className="border-b pb-2 font-semibold">
-                                    {n.message}
-                                </p>
-                            ))}
-                        </CardContent>
-                    </Card>
+                    {/* COLUMN 4 — Empty for now (future use) */}
+                    <div className="space-y-6 text-gray-400 text-center italic">
+
+                        <NoticeBoard
+                            role={loggedInUserRole}
+                            userName={loggedInUserName}
+                        />
+
+                    </div>
 
                     <Card>
                         <CardHeader>
@@ -119,7 +110,7 @@ export default function Dashboard() {
                         </CardContent>
                     </Card>
                 </div>
-
+                
                 {/* COLUMN 2 — Attendance + Attendance List */}
                 <div className="space-y-6">
                     <Attendance
@@ -150,15 +141,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* COLUMN 4 — Empty for now (future use) */}
-                <div className="space-y-6 text-gray-400 text-center italic">
-                    Future widgets will come here…
-                    <NoticeBoard
-                        role={loggedInUserRole}
-                        userName={loggedInUserName}
-                    />
-
-                </div>
+                
             </div>
         </div>
     );
