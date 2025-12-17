@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useEffect } from "react";
 
 // Temporary dummy users (for frontend testing)
 export default function LoginPage() {
