@@ -17,7 +17,7 @@ export default function NoticeBoard({ role, userName }) {
     /* 🔹 Fetch Notices */
     const fetchNotices = async () => {
         try {
-            const res = await fetch(`${apiUrl}/api/notices`);
+            const res = await fetch(`${apiUrl}/notices`);
             const data = await res.json();
             setNotices(data);
         } catch {
@@ -33,7 +33,7 @@ export default function NoticeBoard({ role, userName }) {
         }
 
         try {
-            const res = await fetch(`${apiUrl}/api/notices`, {
+            const res = await fetch(`${apiUrl}/notices`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title, message, createdBy: userName }),
