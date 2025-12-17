@@ -25,6 +25,11 @@ export default function LoginPage() {
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+    
+    useEffect(() => {
+        fetch(`${apiUrl}/health`).catch(() => { });
+    }, []);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,10 +44,6 @@ export default function LoginPage() {
 
         try {
             setLoading(true);
-
-            // 🔥 Wake up Render backend (non-blocking)
-            fetch(`${apiUrl}/health`).catch(() => { });
-
             // 🔐 Login API call
             const res = await fetch(`${apiUrl}/auth/login`, {
                 method: "POST",

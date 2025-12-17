@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import Leave from "@/components/Leave";
 import Attendance from "@/components/Attendance";
 import AttendanceList from "@/components/AttendanceList";
+import NoticeBoard from "@/components/NoticeBoard";
 
 
 
-// 👇👇👇 YAHAN PASTE KARO
+
 function DashboardSkeleton() {
     return (
         <div className="min-h-screen p-6 space-y-6">
@@ -152,6 +153,11 @@ export default function Dashboard() {
                 {/* COLUMN 4 — Empty for now (future use) */}
                 <div className="space-y-6 text-gray-400 text-center italic">
                     Future widgets will come here…
+                    <NoticeBoard
+                        role={loggedInUserRole}
+                        userName={loggedInUserName}
+                    />
+
                 </div>
             </div>
         </div>

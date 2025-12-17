@@ -23,6 +23,12 @@ export default function RegisterPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+
+    useEffect(() => {
+        fetch(`${apiUrl}/health`).catch(() => { });
+    }, []);
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(formData);

@@ -8,7 +8,6 @@ import { toast } from "react-hot-toast";
 export default function Attendance({ loggedInUserId, loggedInUserName }) {
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [timeElapsed, setTimeElapsed] = useState(0); // in seconds
-    //const [isOfficeNetwork, setIsOfficeNetwork] = useState(false);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const intervalRef = useRef(null);
 
