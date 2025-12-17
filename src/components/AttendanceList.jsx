@@ -31,7 +31,7 @@ export default function AttendanceList({ loggedInUserId, loggedInUserName, role 
 
     // 🧑‍💼 Logged in user details (from localStorage)
     //const loggedInUser = JSON.parse(localStorage.getItem("user")) || null;
-    console.log("Logged in user:", { loggedInUserId, loggedInUserName, role });
+    //console.log("Logged in user:", { loggedInUserId, loggedInUserName, role });
 
     useEffect(() => {
         const fetchAttendance = async () => {
@@ -40,7 +40,7 @@ export default function AttendanceList({ loggedInUserId, loggedInUserName, role 
                 const data = await res.json();
                 setRecords(data);
                 setFilteredRecords(data);
-                console.log("✅ Fetched attendance records:", data);    
+                //console.log("✅ Fetched attendance records:", data);    
             } catch (err) {
                 console.error("❌ Error fetching attendance:", err);
             }
@@ -73,7 +73,7 @@ export default function AttendanceList({ loggedInUserId, loggedInUserName, role 
 
     
 
-console.log("User role in AttendanceList:", role);
+//console.log("User role in AttendanceList:", role);
     return (
         <>
             {role !== "admin" ? (

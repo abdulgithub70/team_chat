@@ -58,7 +58,8 @@ export default function LoginPage() {
 
             if (!res.ok || data.success === false) {
 
-                alert(data.message || "Login failed");
+                //alert(data.message || "Login failed");
+                toast.error(data.message || "Login failed");
 
                 setLoading(false);
                 return;
@@ -76,7 +77,7 @@ export default function LoginPage() {
             router.replace("/dashboard");
 
         } catch (error) {
-            console.error("Login error:", error);
+            //console.error("Login error:", error);
             toast.error("Server is waking up, please wait...");
             setLoading(false);
         }

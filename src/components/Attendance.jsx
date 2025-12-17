@@ -69,7 +69,7 @@ export default function Attendance({ loggedInUserId, loggedInUserName }) {
             checkOutTime: new Date().toLocaleTimeString(),
         };
 
-        console.log("📤 Data to send:", attendanceData);
+        //console.log("📤 Data to send:", attendanceData);
         fetch(`${apiUrl}/attendance`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

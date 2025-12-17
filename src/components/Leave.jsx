@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function Leave({ loggedInUserId, loggedInUserName, role }) {
     const [startDate, setStartDate] = useState("");
@@ -34,7 +35,8 @@ export default function Leave({ loggedInUserId, loggedInUserName, role }) {
     // Apply leave
     const handleApply = async () => {
         if (!startDate || !endDate || !reason.trim()) {
-            alert("Please fill all fields");
+            //alert("Please fill all fields");
+            toast.error("Please fill all fields");
             return;
         }
 
@@ -60,7 +62,8 @@ export default function Leave({ loggedInUserId, loggedInUserName, role }) {
             setReason("");
         } catch (err) {
             console.error(err);
-            alert("Failed to apply leave");
+            //alert("Failed to apply leave");
+            toast.error("Failed to apply leave");
         }
     };
 
@@ -81,7 +84,8 @@ export default function Leave({ loggedInUserId, loggedInUserName, role }) {
             );
         } catch (err) {
             console.error(err);
-            alert("Failed to update leave status");
+            //alert("Failed to update leave status");
+            toast.error("Failed to update leave status");
         }
     };
 
