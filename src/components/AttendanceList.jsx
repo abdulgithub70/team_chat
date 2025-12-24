@@ -85,7 +85,7 @@ export default function AttendanceList({ loggedInUserId, loggedInUserName, role 
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="bg-gray-100 text-left">
-                                    <th className="p-2 border"> </th>
+                                    {/* <th className="p-2 border">#</th> */}
                                     <th className="p-2 border">Name</th>
                                     <th className="p-2 border">Date</th>
                                     <th className="p-2 border">Check In</th>
