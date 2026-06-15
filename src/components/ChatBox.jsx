@@ -270,7 +270,7 @@ export default function ChatBox({ activeEmployee, loggedInUserId }) {
                 </Card>
             ) : (
                 <div className="text-gray-500 h-full flex items-center justify-center">
-                    Select an employee to start chatting
+                    Select an employee to start chatting or connect with your pc.
                 </div>
             )}
 
