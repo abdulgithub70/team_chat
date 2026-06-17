@@ -10,7 +10,7 @@ export default function ChatPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const loggedInUserId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
     const router = useRouter();
-
+    
     return (
         <div className="flex h-screen relative bg-gray-300">
 

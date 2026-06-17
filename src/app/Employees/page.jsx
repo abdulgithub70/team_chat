@@ -79,6 +79,36 @@ export default function Employees({
             }));
     }, [allAttendance, selectedEmployee]);
 
+    // selectedEmployee ke current month present days
+    const presentDays = useMemo(() => {
+        if (!selectedEmployee || !allAttendance.length) return 0;
+        const currentMonth = new Date().toISOString().slice(0, 7);
+
+        const filtered = allAttendance.filter(r =>
+            r.userId === selectedEmployee._id &&
+            r.date?.startsWith(currentMonth)
+        );
+
+        console.log("Filtered records for", selectedEmployee?.name, ":", filtered);
+        return filtered.length;
+    }, [allAttendance, selectedEmployee]);
+    console.log("Present days for", selectedEmployee?.name, ":", presentDays);
+
+    const overtimeHours = useMemo(() => {
+        if (!selectedEmployee || !allAttendance.length) return "0h 0m";
+        const currentMonth = new Date().toISOString().slice(0, 7);
+
+        const totalOvertimeMinutes = allAttendance
+            .filter(r =>
+                r.userId === selectedEmployee._id &&
+                r.date?.startsWith(currentMonth)
+            )
+            .reduce((sum, r) => sum + (r.overtimeMinutes || 0), 0);
+
+        const h = Math.floor(totalOvertimeMinutes / 60);
+        const m = totalOvertimeMinutes % 60;
+        return `${h}h ${m}m`;
+    }, [allAttendance, selectedEmployee]);
 
 
     useEffect(() => {
@@ -103,7 +133,7 @@ export default function Employees({
         <>
 
 
-            <div className="flex gap-6 h-[calc(100vh-120px)]">
+            <div className="flex gap-6 h-[calc(100vh-120px)] m-2">
 
                 {/* Left Employee List */}
                 <div className="w-[180px] md:w-[280px] ">
@@ -240,7 +270,7 @@ export default function Employees({
                                                     Present Days
                                                 </p>
                                                 <h3 className="text-3xl font-bold text-sky-600 mt-1">
-                                                    20
+                                                    {presentDays} days
                                                 </h3>
                                             </div>
                                             <User />
@@ -256,7 +286,7 @@ export default function Employees({
                                                     Overtime
                                                 </p>
                                                 <h3 className="text-3xl font-bold text-amber-600 mt-1">
-                                                    12h
+                                                    {overtimeHours}
                                                 </h3>
                                             </div>
                                             <Clock />

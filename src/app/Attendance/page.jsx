@@ -19,7 +19,7 @@ const parseTime12 = (t) => {
     return h * 60 + min;
 };
 
-const isLate = (t) => { const v = parseTime12(t); return v !== null && v > 10 * 60 + 5; };
+const isLate = (t) => { const v = parseTime12(t); return v !== null && v > 10 * 60 + 10; };
 const isOvertime = (t) => { const v = parseTime12(t); return v !== null && v > 19 * 60; };
 
 const toMinutes = (d) => {

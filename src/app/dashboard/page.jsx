@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import AppShell from "@/components/AppShell";
-import Leave from "@/components/Leave";
+//import Leave from "@/components/Leave";
 import Attendance from "@/components/Attendance";
 import AttendanceList from "@/components/AttendanceList";
 import NoticeBoard from "@/components/NoticeBoard";
@@ -203,10 +203,10 @@ console.log("Dashboard - loggedInUserId:", loggedInUserId, "| Role:", loggedInUs
                         <h2 className="text-sm font-medium text-slate-800">Attendance records</h2>
                     </div>
                     <div className="flex-1 overflow-y-auto">
-                        <AttendanceList
-                            loggedInUserId={loggedInUserId}
-                            loggedInUserName={loggedInUserName}
+                        
+                        <NoticeBoard
                             role={loggedInUserRole}
+                            userName={loggedInUserName}
                         />
                     </div>
                 </div>
@@ -217,9 +217,11 @@ console.log("Dashboard - loggedInUserId:", loggedInUserId, "| Role:", loggedInUs
                         <h2 className="text-sm font-medium text-slate-800">Notice board</h2>
                     </div>
                     <div className="flex-1 overflow-y-auto px- py-1">
-                        <NoticeBoard
+                        
+                        <AttendanceList
+                            loggedInUserId={loggedInUserId}
+                            loggedInUserName={loggedInUserName}
                             role={loggedInUserRole}
-                            userName={loggedInUserName}
                         />
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import Providers from "@/components/Provider";
 
 //import App from "next/app";
 const geistSans = Geist({
@@ -19,6 +20,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  
   return (
     <html lang="en">
       <body
@@ -26,7 +28,9 @@ export default function RootLayout({ children }) {
       >
         <Toaster richColors position="top-right" />
         
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         
       </body>
     </html>

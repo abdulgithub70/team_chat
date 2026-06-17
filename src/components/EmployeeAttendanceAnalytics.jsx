@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
     CartesianGrid, ResponsiveContainer,
 } from "recharts";
-import { CalendarCheck, Clock, TrendingUp, Wallet, Inbox } from "lucide-react";
+import { CalendarCheck, CalendarX, Clock, TrendingUp, Wallet, Inbox } from "lucide-react";
 
 const OVERTIME_RATE_PER_HOUR = 100;
 const STANDARD_WORK_MINUTES = 9 * 60;
@@ -55,8 +55,123 @@ const SalaryTooltip = ({ active, payload, label }) => {
     );
 };
 
-export default function EmployeeAttendanceAnalytics({ employee, attendanceData }) {
+export default function EmployeeAttendanceAnalytics({ employee, attendanceData  }) {
     const hasData = Array.isArray(attendanceData) && attendanceData.length > 0;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const [allLeaves, setAllLeaves] = useState([]);
+    const [loggedInUserId, setLoggedInUserId] = useState(null);
+
+
+    const countLeaveDays = (startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (isNaN(start) || isNaN(end)) return 1;
+        const diffMs = end - start;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1; // inclusive
+        return Math.max(1, diffDays);
+    };
+  
+    // 📡 Fetch all leaves once
+    useEffect(() => {
+        const fetchLeaves = async () => {
+            try {
+                const res = await fetch(`${apiUrl}/leave?role=admin`);
+                const data = await res.json();
+                console.log("All leaves:", data);
+                setAllLeaves(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error("Error fetching leaves:", err);
+            }
+        };
+        fetchLeaves();
+    }, []);
+
+    // 🔍 Filter for selected employee
+    const employeeLeaves = useMemo(() => {
+        if (!employee?._id) return [];
+        return allLeaves.filter(l => l.employeeId === employee._id);
+    }, [allLeaves, employee]);
+
+    // 📊 Current month leaves
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const currentMonthLeaves = employeeLeaves.filter(l =>
+        (l.startDate || "").startsWith(currentMonth)
+    );
+
+    console.log("Employee leaves:", employeeLeaves);
+    console.log("Current month leaves:", currentMonthLeaves);
+    
+    // ── Leave constants ──────────────────────────────────────────────────────────
+    const FREE_LEAVE_PER_MONTH = 1;
+
+    // ── Leave logic (add inside component, after employeeLeaves useMemo) ─────────
+
+    // Get all months from joining date to current month
+    const monthRange = useMemo(() => {
+        const start = employee?.joiningDate ? new Date(employee.joiningDate) : new Date();
+        const end = new Date();
+        const months = [];
+        const cur = new Date(start.getFullYear(), start.getMonth(), 1);
+        while (cur <= end) {
+            months.push(`${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}`);
+            cur.setMonth(cur.getMonth() + 1);
+        }
+        return months;
+    }, [employee]);
+
+    // Build month-wise leave summary with carry-forward
+    const leaveMonthlyStats = useMemo(() => {
+        let carryForward = 0;
+        return monthRange.map((month) => {
+            const monthLeaves = employeeLeaves.filter(l =>
+                (l.startDate || "").startsWith(month)
+            );
+            //const approved = monthLeaves.filter(l => (l.status || "").toLowerCase() === "approved").length;
+            const approved = monthLeaves
+                .filter(l => (l.status || "").toLowerCase() === "approved")
+                .reduce((sum, l) => sum + countLeaveDays(l.startDate, l.endDate), 0);
+            const pending = monthLeaves.filter(l => (l.status || "").toLowerCase() === "pending").length;
+            const denied = monthLeaves.filter(l => (l.status || "").toLowerCase() === "denied").length;
+
+            const freeQuota = FREE_LEAVE_PER_MONTH + carryForward;
+            const deductible = Math.max(0, approved - freeQuota);
+            const dailySal = (employee?.salary || 0) / STANDARD_DAYS_PER_MONTH;
+            const deductionAmt = deductible * dailySal;
+            const unused = Math.max(0, freeQuota - approved);
+
+            const result = { month, approved, pending, denied, freeQuota, deductible, deductionAmt, unused, carryForward };
+            carryForward = unused; // carry unused to next month
+            return result;
+        });
+    }, [employeeLeaves, monthRange, employee]);
+
+    // Current month stats
+    const currentMonthStats = useMemo(() => {
+        const current = new Date().toISOString().slice(0, 7);
+        return leaveMonthlyStats.find(m => m.month === current) || {
+            approved: 0, pending: 0, denied: 0,
+            freeQuota: FREE_LEAVE_PER_MONTH, deductible: 0,
+            deductionAmt: 0, unused: FREE_LEAVE_PER_MONTH, carryForward: 0
+        };
+    }, [leaveMonthlyStats]);
+
+    // Current month leave list (all statuses)
+    const currentMonthLeaveList = useMemo(() => {
+        const current = new Date().toISOString().slice(0, 7);
+        return employeeLeaves.filter(l => (l.startDate || "").startsWith(current));
+    }, [employeeLeaves]);
+
+    // Chart data — last 4 months
+    const leaveChartData = useMemo(() => {
+        return leaveMonthlyStats.slice(-4).map(m => ({
+            label: m.month.slice(5), // "06"
+            approved: m.approved,
+            freeQuota: m.freeQuota,
+            deductible: m.deductible,
+        }));
+    }, [leaveMonthlyStats]);
+
+    const dailySalaryVal = (employee?.salary || 0) / STANDARD_DAYS_PER_MONTH;
 
     const { attendanceChartData, salaryChartData, summary } = useMemo(() => {
         if (!hasData) {
@@ -68,6 +183,11 @@ export default function EmployeeAttendanceAnalytics({ employee, attendanceData }
         }
 
         const sorted = [...attendanceData].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+
+        
+
+        
         // ✅ Replace with:
         const dailySalary = (employee?.salary || 0) / STANDARD_DAYS_PER_MONTH;
 
@@ -108,6 +228,9 @@ export default function EmployeeAttendanceAnalytics({ employee, attendanceData }
             });
         });
 
+
+
+
         return {
             attendanceChartData: attendanceChart,
             salaryChartData: salaryChart,
@@ -115,7 +238,7 @@ export default function EmployeeAttendanceAnalytics({ employee, attendanceData }
                 presentDays,
                 totalHours: minutesToHours(totalMinutesSum),
                 overtimeHours: minutesToHours(overtimeMinutesSum),
-                estimatedSalary: Math.round(regularSalaryTotal + overtimeSalaryTotal),
+                estimatedSalary: Math.round(regularSalaryTotal - currentMonthStats.deductionAmt),
             },
         };
     }, [attendanceData, employee, hasData]);
@@ -160,28 +283,120 @@ export default function EmployeeAttendanceAnalytics({ employee, attendanceData }
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+                {/* LEFT — Leave Tracker */}
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 h-100 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 overflow-y-auto">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h3 className="text-sm font-semibold text-slate-800">Monthly attendance</h3>
-                            <p className="text-xs text-slate-400 mt-0.5">Working hours per day</p>
+                            <h3 className="text-sm font-semibold text-slate-800">Leave tracker</h3>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                                1 free leave/month · unused carries forward
+                            </p>
                         </div>
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
-                            <Clock className="w-4 h-4 text-indigo-600" />
+                        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center">
+                            <CalendarX className="w-4 h-4 text-rose-600" />
                         </div>
                     </div>
-                    <div className="h-72">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={attendanceChartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false}
-                                    label={{ value: "Hours", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "#94A3B8" } }} />
-                                <Tooltip content={<AttendanceTooltip />} />
-                                <Line type="monotone" dataKey="hours" name="Working hours" stroke="#6366F1" strokeWidth={2.5}
-                                    dot={{ r: 3, fill: "#6366F1", strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                            </LineChart>
-                        </ResponsiveContainer>
+
+                    {/* 4 mini stat cards */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="bg-indigo-50 rounded-xl p-3">
+                            <p className="text-xs text-slate-500">Free quota</p>
+                            <p className="text-xl font-semibold text-indigo-600">{currentMonthStats.freeQuota}</p>
+                            <p className="text-[11px] text-slate-400">
+                                {currentMonthStats.carryForward > 0
+                                    ? `+${currentMonthStats.carryForward} carried forward`
+                                    : "this month"}
+                            </p>
+                        </div>
+                        <div className="bg-green-50 rounded-xl p-3">
+                            <p className="text-xs text-slate-500">Approved</p>
+                            <p className="text-xl font-semibold text-green-600">{currentMonthStats.approved}</p>
+                            <p className="text-[11px] text-slate-400">this month</p>
+                        </div>
+                        <div className="bg-amber-50 rounded-xl p-3">
+                            <p className="text-xs text-slate-500">Pending</p>
+                            <p className="text-xl font-semibold text-amber-600">{currentMonthStats.pending}</p>
+                            <p className="text-[11px] text-slate-400">awaiting</p>
+                        </div>
+                        <div className="bg-red-50 rounded-xl p-3">
+                            <p className="text-xs text-slate-500">Deductible</p>
+                            <p className="text-xl font-semibold text-red-600">{currentMonthStats.deductible}</p>
+                            <p className="text-[11px] text-slate-400">
+                                {currentMonthStats.deductionAmt > 0
+                                    ? `−₹${Math.round(currentMonthStats.deductionAmt).toLocaleString("en-IN")}`
+                                    : "no deduction"}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="mb-4">
+                        <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                            <span>Free quota used</span>
+                            <span>{Math.min(currentMonthStats.approved, currentMonthStats.freeQuota)} / {currentMonthStats.freeQuota}</span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-2 rounded-full transition-all"
+                                style={{
+                                    width: `${Math.min((currentMonthStats.approved / (currentMonthStats.freeQuota || 1)) * 100, 100)}%`,
+                                    background: currentMonthStats.deductible > 0 ? "#EF4444" : "#22C55E"
+                                }}
+                            />
+                        </div>
+                        {currentMonthStats.deductible > 0 && (
+                            <p className="text-xs text-red-500 mt-1.5">
+                                {currentMonthStats.deductible} extra leave(s) —{" "}
+                                <span className="font-medium">
+                                    ₹{Math.round(currentMonthStats.deductionAmt).toLocaleString("en-IN")}
+                                </span> will be deducted
+                            </p>
+                        )}
+                        {currentMonthStats.unused > 0 && (
+                            <p className="text-xs text-green-600 mt-1.5">
+                                {currentMonthStats.unused} unused leave(s) → carry forward to next month
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Bar chart — last 4 months */}
+                    {leaveChartData.length > 0 && (
+                        <div className="h-36">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={leaveChartData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                                    <Tooltip />
+                                    <Bar dataKey="freeQuota" name="Free quota" fill="#E0E7FF" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="approved" name="Approved" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="deductible" name="Deductible" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
+
+                    {/* Current month leave list */}
+                    <div className="mt-4 space-y-2">
+                        {currentMonthLeaveList.length === 0 ? (
+                            <p className="text-xs text-slate-400 text-center py-3">No leaves this month</p>
+                        ) : currentMonthLeaveList.map(l => {
+                            const start = new Date(l.startDate).toLocaleDateString("en-US", { day: "2-digit", month: "short" });
+                            const end = new Date(l.endDate).toLocaleDateString("en-US", { day: "2-digit", month: "short" });
+                            const status = (l.status || "pending").toLowerCase();
+                            const styles = { approved: "bg-green-50 text-green-700", denied: "bg-red-50 text-red-700", pending: "bg-amber-50 text-amber-700" };
+                            return (
+                                <div key={l._id} className="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-slate-500">{start} → {end}</p>
+                                        <p className="text-sm text-slate-700 truncate">{l.reason}</p>
+                                    </div>
+                                    <span className={`text-[11px] font-medium px-2 py-1 rounded-md flex-shrink-0 ${styles[status] || styles.pending}`}>
+                                        {status}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { Users, UserPlus} from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 
 
 export default function AppShell({ children }) {
@@ -89,10 +90,18 @@ export default function AppShell({ children }) {
                     
                     {loggedInUserRole === "admin" && (
                         <Link
-                            href="/Settings"
+                            href="/setting"
                             className="flex items-center gap-2 p-2 rounded hover:bg-slate-100 whitespace-nowrap"
                         >
                             ⚙ {open && <span>Settings</span>}
+                        </Link>
+                    )}
+                    {loggedInUserRole === "admin" && (
+                        <Link
+                            href="/register"
+                            className="flex items-center gap-2 p-2 rounded hover:bg-slate-100 whitespace-nowrap"
+                        >
+                            <UserPlus className="w-5 h-5 text-blue-600 dark:text-blue-400" /> {open && <span>Add Employee</span>}
                         </Link>
                     )}
                 </nav>
@@ -114,6 +123,13 @@ export default function AppShell({ children }) {
                                     {loggedInUserName}
                                 </span>
                             </p>
+                            
+                           <div className="">
+                            <NotificationBell
+                                loggedInUserId={loggedInUserId}
+                                loggedInUserRole={loggedInUserRole}
+                            />
+                            </div>
                             <Button
                                 size="sm"
                                 className="bg-red-500 text-white hover:bg-red-600 flex-shrink-0"

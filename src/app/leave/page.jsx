@@ -39,6 +39,7 @@ export default function LeavePage() {
             try {
                 const res = await fetch(`${apiUrl}/leave`);
                 const data = await res.json();
+                console.log("Fetched leaves:", data);
                 setLeaves(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error("Error fetching leaves:", err);
@@ -46,7 +47,7 @@ export default function LeavePage() {
         };
         fetchLeaves();
     }, [loggedInUserId]);
-
+    
     const isAdmin = role === "admin";
 
     // Role-based base data
